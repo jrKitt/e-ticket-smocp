@@ -398,7 +398,7 @@ export default function Home() {
                     <div className="ml-2">
                       <div className="w-32 h-32 p-1 border border-gray-300">
                         <QRCode
-                          value={`CSITCAMP2023-${studentID}-${group}`}
+                          value={`CPFRESHY-${studentID}-${group}`}
                           size={120}
                           level="M"
                           className="w-full h-full"
