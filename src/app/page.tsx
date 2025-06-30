@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import QRCode from "react-qr-code";
+import { ToastContainer, toast } from "react-toastify";
 
 const groupLabels = [
   "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"
@@ -70,7 +71,7 @@ export default function Home() {
         );
         setCurrentStep("personalInfo");
       } else {
-        alert(data.error || "ไม่พบข้อมูลนักศึกษา");
+                toast.error("ไม่พบข้อมูล");
       }
     } catch {
       alert("เกิดข้อผิดพลาดในการเชื่อมต่อ");
@@ -428,6 +429,19 @@ export default function Home() {
           )}
         </div>
       </div>
+    <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="colored"
+      />
     </div>
+
   );
 }
