@@ -1,8 +1,9 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import QRCode from "react-qr-code";
 
 const groupLabels = [
-  "A", "B", "C", "D", "E", "F", "G", "H", "I", "J"
+  "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"
 ];
 const groupCount = 10;
 
@@ -10,7 +11,6 @@ const wheelColors = [
   "#2467f6", 
   "#00225a", 
 ];
-
 
 const majorMap: Record<string, string> = {
   cs: "วิทยาการคอมพิวเตอร์",
@@ -31,6 +31,17 @@ export default function Home() {
   const [rotation, setRotation] = useState(0);
   const [studentStatus, setStudentStatus] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
+  const [registrationComplete, setRegistrationComplete] = useState(false);
+  const [ticketId, setTicketId] = useState("");
+
+  // สร้าง ticket ID เมื่อลงทะเบียนสำเร็จ
+  useEffect(() => {
+    if (registrationComplete) {
+      // สร้าง ticket ID แบบสุ่ม
+      const randomId = Math.random().toString(36).substring(2, 10).toUpperCase();
+      setTicketId(`CSITCAMP-${randomId}`);
+    }
+  }, [registrationComplete]);
 
   // ดึงข้อมูลจาก Firebase API
   const handleCheckStudentID = async () => {
@@ -50,8 +61,7 @@ export default function Home() {
 
       if (res.ok && data.students && data.students.length > 0) {
         const student = data.students[0];
-        // สมมติ status = 0 ให้กรอกอัตโนมัติ
-        setStudentStatus(0); // หรือแก้ตาม field จริงถ้ามี
+        setStudentStatus(0); 
         setFullName(student.StudentName || "");
         setFaculty(
           majorMap[student.StudentMajor] ||
@@ -62,7 +72,7 @@ export default function Home() {
       } else {
         alert(data.error || "ไม่พบข้อมูลนักศึกษา");
       }
-    } catch (e) {
+    } catch {
       alert("เกิดข้อผิดพลาดในการเชื่อมต่อ");
     }
     setLoading(false);
@@ -95,7 +105,20 @@ export default function Home() {
   };
 
   const handleConfirmRegistration = () => {
-    alert(`ลงทะเบียนสำเร็จ! คุณได้อยู่กลุ่ม ${group}`);
+    setRegistrationComplete(true);
+    setCurrentStep("ticket");
+  };
+
+  // ฟังก์ชันสำหรับการทำข้อมูลเป็นรูปแบบวันที่
+  const formatDate = (date: Date) => {
+    const options: Intl.DateTimeFormatOptions = { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric', 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    };
+    return date.toLocaleDateString('th-TH', options);
   };
 
   return (
@@ -228,7 +251,7 @@ export default function Home() {
                     <span>{fullName}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500">คณะ:</span>
+                    <span className="text-gray-500">หลักสูตร:</span>
                     <span>{faculty}</span>
                   </div>
                   <div className="flex justify-between">
@@ -328,6 +351,78 @@ export default function Home() {
                 >
                   ยืนยันการลงทะเบียน
                 </button>
+              </div>
+            </div>
+          )}
+
+          {/* ตั๋วเข้างาน */}
+          {currentStep === "ticket" && (
+            <div className="animate-fadeIn">
+              <div className="max-w-md mx-auto overflow-hidden">
+                <div className="bg-gradient-to-r from-blue-700 to-blue-900 p-4 text-white">
+                  <h2 className="text-xl font-bold text-center">กิจกรรมรับน้องและเปิดโลกCP</h2>
+                  <p className="text-center text-sm">วิทยาลัยการคอมพิวเตอร์</p>
+                </div>
+                
+                {/* ส่วนตัวตั๋ว */}
+                <div className="relative border-2 border-blue-900 border-dashed bg-white rounded-b-lg p-4">
+                  {/* ขอบซิกแซกด้านบน */}
+                  <div className="absolute top-0 left-0 right-0 h-4 overflow-hidden flex">
+                    {Array.from({ length: 20 }).map((_, i) => (
+                      <div key={i} className="w-4 h-4 bg-white" style={{
+                        clipPath: "polygon(50% 100%, 0 0, 100% 0)"
+                      }}></div>
+                    ))}
+                  </div>
+                  
+                  <div className="pt-4 flex justify-between">
+                    <div className="flex-1">
+                      <h3 className="font-bold text-blue-900 text-lg">{fullName}</h3>
+                      <p className="text-sm text-gray-600">รหัสนักศึกษา: {studentID}</p>
+                      <p className="text-sm text-gray-600">หลักสูตร: {faculty}</p>
+                      <p className="text-sm text-gray-600 mb-2">ประเภทอาหาร: {foodType}</p>
+                      
+                      <div className="flex items-center gap-2 mt-3">
+                        <div className="flex items-center px-3 py-1 bg-blue-700 text-white text-sm rounded-full">
+                          <span>กลุ่ม {group}</span>
+                        </div>
+                        <p className="text-xs text-gray-500">Ticket ID: {ticketId}</p>
+                      </div>
+                      
+                      <div className="mt-4">
+                        <p className="text-xs text-gray-500">ลงทะเบียนเมื่อ: {formatDate(new Date())}</p>
+                        <p className="text-xs text-gray-500">สถานที่: อาคาร SC.09 อาคารวิทยวิภาส</p>
+                      </div>
+                    </div>
+                    
+                    <div className="ml-2">
+                      <div className="w-32 h-32 p-1 border border-gray-300">
+                        <QRCode
+                          value={`CSITCAMP2023-${studentID}-${group}`}
+                          size={120}
+                          level="M"
+                          className="w-full h-full"
+                        />
+                      </div>
+                      <p className="text-center text-xs mt-1 text-gray-500">แสกนเพื่อเข้างาน</p>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-4 text-center">
+                    <p className="text-sm text-gray-600">กรุณานำตั๋วนี้มาแสดงในวันงาน</p>
+                    <p className="text-xs text-gray-500 mt-1">วันที่ 10-11 กรกฏาคม 2568</p>
+                  </div>
+                </div>
+                
+                {/* ปุ่มดาวน์โหลดและแชร์ */}
+                <div className="mt-4 flex gap-3">
+                  <button className="flex-1 bg-blue-700 text-white py-2 rounded-md text-sm">
+                    บันทึกตั๋ว
+                  </button>
+                  <button className="flex-1 border border-blue-700 text-blue-700 py-2 rounded-md text-sm">
+                    แชร์ตั๋ว
+                  </button>
+                </div>
               </div>
             </div>
           )}
