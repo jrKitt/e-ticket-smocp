@@ -40,7 +40,7 @@ export default function Home() {
     if (registrationComplete) {
       // สร้าง ticket ID แบบสุ่ม
       const randomId = Math.random().toString(36).substring(2, 10).toUpperCase();
-      setTicketId(`CSITCAMP-${randomId}`);
+      setTicketId(`CPFRESHY-${randomId}`);
     }
   }, [registrationComplete]);
 
