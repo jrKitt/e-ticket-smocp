@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 
-// ป้องกัน initialize ซ้ำ
 if (!getApps().length) {
   initializeApp({
     credential: cert({

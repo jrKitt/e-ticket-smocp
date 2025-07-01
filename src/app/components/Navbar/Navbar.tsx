@@ -1,155 +1,139 @@
 "use client";
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function Navbar() {
-    const [dropdownOpen, setDropdownOpen] = useState(false);
     const [menuOpen, setMenuOpen] = useState(false);
+    const [scrolled, setScrolled] = useState(false);
+    
+    useEffect(() => {
+        const handleScroll = () => {
+            if (window.scrollY > 10) {
+                setScrolled(true);
+            } else {
+                setScrolled(false);
+            }
+        };
+        
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
 
     return (
-        <nav className="bg-white border-gray-200 dark:bg-gray-900 dark:border-gray-700">
-            <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
-                <Link href="#" className="flex items-center space-x-3 rtl:space-x-reverse">
-                    <Image
-                        src="/SMOLOGO.webp"
-                        className="h-8"
-                        alt="Flowbite Logo"
-                        width={32}
-                        height={32}
-                    />
-                    <span className="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">
-                        SMOCP
-                    </span>
+        <nav className={`fixed w-full z-50 transition-all duration-300 ${
+            scrolled ? "bg-[#30319D]/95 backdrop-blur-sm shadow-lg py-2" : "bg-[#30319D] py-4"
+        }`}>
+            <div className="max-w-7xl flex items-center justify-between mx-auto px-4 sm:px-6 lg:px-8">
+                <Link href="/" className="flex items-center space-x-3">
+                    <div className="relative h-10 w-10 overflow-hidden rounded-full border-2 border-white/20">
+                        <Image
+                            src="/SMOLOGO.webp"
+                            alt="SMOCP Logo"
+                            fill
+                            className="object-cover"
+                        />
+                    </div>
+                    <div className="flex flex-col">
+                        <span className="text-xl font-bold text-white tracking-wider">
+                            SMOCP
+                        </span>
+                        <span className="text-xs text-blue-200 hidden sm:block">
+                            Student Management Online CP
+                        </span>
+                    </div>
                 </Link>
+                
+                {/* เมนูแบบ Desktop */}
+                <div className="hidden md:flex items-center space-x-1">
+                    <Link
+                        href="/"
+                        className="px-4 py-2 text-white hover:text-blue-200 rounded-md text-sm font-medium transition-colors duration-200 relative group"
+                    >
+                        ลงทะเบียนกิจกรรม
+                        <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-400 transition-all duration-300 group-hover:w-full"></span>
+                    </Link>
+                    <Link
+                        href="/news"
+                        className="px-4 py-2 text-white hover:text-blue-200 rounded-md text-sm font-medium transition-colors duration-200 relative group"
+                    >
+                        ข่าวสาร
+                        <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-400 transition-all duration-300 group-hover:w-full"></span>
+                    </Link>
+                    <Link
+                        href="/about"
+                        className="px-4 py-2 text-white hover:text-blue-200 rounded-md text-sm font-medium transition-colors duration-200 relative group"
+                    >
+                        เกี่ยวกับเรา
+                        <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-400 transition-all duration-300 group-hover:w-full"></span>
+                    </Link>
+                    <Link
+                        href="/admin"
+                        className="ml-2 px-5 py-2 bg-white text-[#30319D] hover:bg-blue-50 rounded-full text-sm font-medium transition-all duration-200 flex items-center"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M3 3a1 1 0 011 1v12a1 1 0 11-2 0V4a1 1 0 011-1zm7.707 3.293a1 1 0 010 1.414L9.414 9H17a1 1 0 110 2H9.414l1.293 1.293a1 1 0 01-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                        เข้าสู่ระบบ
+                    </Link>
+                </div>
+                
+                {/* ปุ่มแฮมเบอร์เกอร์สำหรับมือถือ */}
                 <button
                     type="button"
-                    className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
-                    aria-controls="navbar-dropdown"
-                    aria-expanded={menuOpen}
-                    onClick={() => setMenuOpen((v) => !v)}
+                    className="md:hidden inline-flex items-center justify-center p-2 rounded-md text-white hover:text-blue-200 hover:bg-[#3f40b5] focus:outline-none transition duration-200"
+                    onClick={() => setMenuOpen(!menuOpen)}
                 >
-                    <span className="sr-only">Open main menu</span>
-                    <svg
-                        className="w-5 h-5"
-                        aria-hidden="true"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 17 14"
-                    >
-                        <path
-                            stroke="currentColor"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M1 1h15M1 7h15M1 13h15"
-                        />
-                    </svg>
+                    <span className="sr-only">เปิดเมนูหลัก</span>
+                    {menuOpen ? (
+                        <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    ) : (
+                        <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    )}
                 </button>
-                <div
-                    className={`${
-                        menuOpen ? "" : "hidden"
-                    } w-full md:block md:w-auto`}
-                    id="navbar-dropdown"
-                >
-                    <ul className="flex flex-col font-medium p-4 md:p-0 mt-4  md:space-x-8 rtl:space-x-reverse md:flex-row md:mt-0 md:border-0 md:bg-white md:dark:bg-gray-900 dark:border-gray-700">
-                        <li>
-                            <Link
-                                href="#"
-                                className="block py-2 px-3 text-white bg-blue-700 rounded-sm md:bg-transparent md:text-blue-700 md:p-0 md:dark:text-blue-500 dark:bg-blue-600 md:dark:bg-transparent"
-                                aria-current="page"
-                            >
-                                Home
-                            </Link>
-                        </li>
-                        <li className="relative">
-                            <button
-                                type="button"
-                                className="flex items-center justify-between w-full py-2 px-3 text-gray-900 rounded-sm hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 md:w-auto dark:text-white md:dark:hover:text-blue-500 dark:focus:text-white dark:border-gray-700 dark:hover:bg-gray-700 md:dark:hover:bg-transparent"
-                                onClick={() => setDropdownOpen((v) => !v)}
-                                aria-expanded={dropdownOpen}
-                            >
-                                Dropdown
-                                <svg
-                                    className="w-2.5 h-2.5 ms-2.5"
-                                    aria-hidden="true"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 10 6"
-                                >
-                                    <path
-                                        stroke="currentColor"
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth="2"
-                                        d="m1 1 4 4 4-4"
-                                    />
-                                </svg>
-                            </button>
-                            {dropdownOpen && (
-                                <div className="absolute z-10 font-normal bg-white divide-y divide-gray-100 rounded-lg shadow-sm w-44 dark:bg-gray-700 dark:divide-gray-600 mt-2">
-                                    <ul className="py-2 text-sm text-gray-700 dark:text-gray-400">
-                                        <li>
-                                            <Link
-                                                href="#"
-                                                className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
-                                            >
-                                                Dashboard
-                                            </Link>
-                                        </li>
-                                        <li>
-                                            <Link
-                                                href="#"
-                                                className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
-                                            >
-                                                Settings
-                                            </Link>
-                                        </li>
-                                        <li>
-                                            <Link
-                                                href="#"
-                                                className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
-                                            >
-                                                Earnings
-                                            </Link>
-                                        </li>
-                                    </ul>
-                                    <div className="py-1">
-                                        <Link
-                                            href="#"
-                                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
-                                        >
-                                            Sign out
-                                        </Link>
-                                    </div>
-                                </div>
-                            )}
-                        </li>
-                        <li>
-                            <Link
-                                href="#"
-                                className="block py-2 px-3 text-gray-900 rounded-sm hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"
-                            >
-                                Services
-                            </Link>
-                        </li>
-                        <li>
-                            <Link
-                                href="#"
-                                className="block py-2 px-3 text-gray-900 rounded-sm hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"
-                            >
-                                Pricing
-                            </Link>
-                        </li>
-                        <li>
-                            <Link
-                                href="#"
-                                className="block py-2 px-3 text-gray-900 rounded-sm hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"
-                            >
-                                Contact
-                            </Link>
-                        </li>
-                    </ul>
+            </div>
+            
+            <div className={`md:hidden transition-all duration-300 ease-in-out ${
+                menuOpen 
+                ? "max-h-60 opacity-100" 
+                : "max-h-0 opacity-0 overflow-hidden"
+            }`}>
+                <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-[#2b2c8d]">
+                    <Link
+                        href="/register"
+                        className="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-[#3f40b5] transition-colors duration-200"
+                        onClick={() => setMenuOpen(false)}
+                    >
+                        ลงทะเบียนกิจกรรม
+                    </Link>
+                    <Link
+                        href="/news"
+                        className="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-[#3f40b5] transition-colors duration-200"
+                        onClick={() => setMenuOpen(false)}
+                    >
+                        ข่าวสาร
+                    </Link>
+                    <Link
+                        href="/about"
+                        className="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-[#3f40b5] transition-colors duration-200"
+                        onClick={() => setMenuOpen(false)}
+                    >
+                        เกี่ยวกับเรา
+                    </Link>
+                    <Link
+                        href="/login"
+                        className="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-[#3f40b5] transition-colors duration-200 flex items-center"
+                        onClick={() => setMenuOpen(false)}
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M3 3a1 1 0 011 1v12a1 1 0 11-2 0V4a1 1 0 011-1zm7.707 3.293a1 1 0 010 1.414L9.414 9H17a1 1 0 110 2H9.414l1.293 1.293a1 1 0 01-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                        เข้าสู่ระบบ
+                    </Link>
                 </div>
             </div>
         </nav>
