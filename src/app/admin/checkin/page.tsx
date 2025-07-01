@@ -6,6 +6,8 @@ interface Ticket {
   id: string;
   studentID: string;
   name: string;
+  faculty?: string;
+  group?: string;
   checkInStatus: boolean;
 }
 
@@ -14,13 +16,19 @@ export default function QrcodeCheckin() {
   const [ticket, setTicket] = useState<Ticket | null>(null);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState("");
+  const [resultType, setResultType] = useState<"success" | "error" | "">("");
   const [scanning, setScanning] = useState(false);
+  const [recentCheckins, setRecentCheckins] = useState<Ticket[]>([]);
   const html5QrCodeRef = useRef<Html5Qrcode | null>(null);
 
   const handleSearch = async (searchValue?: string) => {
+    if (!searchValue && !input.trim()) return;
+    
     setLoading(true);
     setResult("");
+    setResultType("");
     setTicket(null);
+    
     try {
       const res = await fetch("/api/e-ticket");
       const data = await res.json();
@@ -31,22 +39,29 @@ export default function QrcodeCheckin() {
           t.studentID?.toLowerCase() === search ||
           t.name?.toLowerCase().includes(search)
       );
+      
       if (!found) {
         setResult("ไม่พบข้อมูลตั๋ว");
+        setResultType("error");
       } else {
         setTicket(found);
         setResult("");
       }
     } catch {
-      setResult("เกิดข้อผิดพลาด");
+      setResult("เกิดข้อผิดพลาดในการค้นหา");
+      setResultType("error");
     }
+    
     setLoading(false);
   };
 
   const handleCheckin = async () => {
     if (!ticket?.id) return;
+    
     setLoading(true);
     setResult("");
+    setResultType("");
+    
     try {
       const res = await fetch("/api/e-ticket-checkin", {
         method: "POST",
@@ -54,49 +69,63 @@ export default function QrcodeCheckin() {
         body: JSON.stringify({ id: ticket.id }), 
       });
       const data = await res.json();
+      
       if (res.ok) {
+        const updatedTicket = { ...ticket, checkInStatus: true };
+        setTicket(updatedTicket);
         setResult("เช็คอินสำเร็จ");
-        setTicket({ ...ticket, checkInStatus: true });
+        setResultType("success");
+        setRecentCheckins(prev => [updatedTicket, ...prev].slice(0, 5));
+        // เคลียร์ input หลังจากเช็คอินสำเร็จ
+        setTimeout(() => {
+          setInput("");
+          setTicket(null);
+          setResult("");
+        }, 3000);
       } else {
         setResult(data.error || "เช็คอินไม่สำเร็จ");
+        setResultType("error");
       }
     } catch {
-      setResult("เกิดข้อผิดพลาด");
+      setResult("เกิดข้อผิดพลาดในการเช็คอิน");
+      setResultType("error");
     }
+    
     setLoading(false);
   };
 
   const startScan = async () => {
     setScanning(true);
     setResult("");
+    setResultType("");
     setTicket(null);
+    
     if (!html5QrCodeRef.current) {
       html5QrCodeRef.current = new Html5Qrcode("qr-reader");
     }
+    
     try {
       await html5QrCodeRef.current.start(
         { facingMode: "environment" },
         {
           fps: 10,
-          qrbox: 250,
+          qrbox: { width: 250, height: 250 },
         },
         (decodedText: string) => {
-          setScanning(false);
-          if (html5QrCodeRef.current) {
-            html5QrCodeRef.current.stop();
-          }
+          stopScan();
           setInput(decodedText);
           handleSearch(decodedText);
         },
         () => {
+          // Ignore errors
         }
       );
-    } catch{
+    } catch {
       setResult("ไม่สามารถเข้าถึงกล้องได้");
+      setResultType("error");
       setScanning(false);
     }
   };
-
 
   const stopScan = () => {
     if (html5QrCodeRef.current) {
@@ -113,62 +142,242 @@ export default function QrcodeCheckin() {
     };
   }, []);
 
+  // เพิ่มคลาสเมื่อมีการแสดงผลลัพธ์
+  const getResultClass = () => {
+    if (resultType === "success") return "bg-green-100 border-green-500 text-green-700";
+    if (resultType === "error") return "bg-red-100 border-red-500 text-red-700";
+    return "";
+  };
+
   return (
-    <div className="max-w-lg mx-auto py-10 text-black">
-      <h1 className="text-2xl font-bold mb-6">เช็คอินด้วย QR หรือค้นหาด้วยข้อมูล</h1>
-      <div className="mb-4">
-        <input
-          className="border rounded-lg p-3 w-full"
-          placeholder="กรอก Ticket ID, ชื่อ, หรือรหัสนักศึกษา หรือสแกน QR"
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          onKeyDown={e => e.key === "Enter" && handleSearch()}
-          disabled={loading || scanning}
-        />
-        <button
-          className="mt-2 bg-blue-700 text-white px-4 py-2 rounded-lg"
-          onClick={() => handleSearch()}
-          disabled={loading || scanning}
-        >
-          ค้นหา
-        </button>
-      </div>
-      <div className="mb-4">
-        <button
-          className={`bg-amber-500 text-white px-4 py-2 rounded-lg ${scanning ? "opacity-50" : ""}`}
-          onClick={startScan}
-          disabled={scanning}
-        >
-          {scanning ? "กำลังสแกน..." : "สแกน QR Code"}
-        </button>
-        {scanning && (
-          <button
-            className="ml-2 bg-gray-400 text-white px-4 py-2 rounded-lg"
-            onClick={stopScan}
-          >
-            หยุดสแกน
-          </button>
-        )}
-        <div id="qr-reader" className="mt-4" style={{ width: 300, height: 300 }} />
-      </div>
-      {result && <div className="mb-4 text-red-600">{result}</div>}
-      {ticket && (
-        <div className="border rounded-lg p-4 bg-gray-50 mb-4">
-          <div>ชื่อ: <b>{ticket.name}</b></div>
-          <div>รหัสนักศึกษา: {ticket.studentID}</div>
-          <div>Ticket ID: {ticket.id}</div>
-          <div>สถานะ: {ticket.checkInStatus ? "เช็คอินแล้ว" : "ยังไม่เช็คอิน"}</div>
-          {!ticket.checkInStatus && (
-            <button
-              className="mt-3 bg-green-600 text-white px-4 py-2 rounded-lg"
-              onClick={handleCheckin}
-              disabled={loading}
-            >
-              ยืนยันเช็คอิน
-            </button>
-          )}
+    <div className="min-h-screen bg-gray-50 pt-6 pb-12 ">
+      <div className="max-w-lg mx-auto px-4">
+        <div className="text-center mb-8">
+          <h1 className="text-2xl font-bold text-[#30319D] mb-2">ระบบเช็คอินกิจกรรม</h1>
+          <p className="text-gray-600">กิจกรรมรับน้องและเปิดโลก CP</p>
         </div>
-      )}
+        
+        {/* Card */}
+        <div className="bg-white rounded-xl shadow-md overflow-hidden mb-6">
+          {/* Header */}
+          <div className="bg-gradient-to-r from-[#30319D] to-[#4344b3] p-4 text-white">
+            <div className="flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+              </svg>
+              <h2 className="text-lg font-semibold">เช็คอินด้วย QR Code หรือค้นหา</h2>
+            </div>
+          </div>
+          
+          {/* Content */}
+          <div className="p-5">
+            {/* Search Bar */}
+            <div className="mb-5">
+              <label htmlFor="search-input" className="block text-sm font-medium text-gray-700 mb-1">
+                ค้นหาข้อมูล
+              </label>
+              <div className="relative">
+                <input
+                  id="search-input"
+                  className="border text-black border-gray-300 rounded-lg p-3 w-full pl-10 focus:ring-2 focus:ring-[#30319D] focus:border-[#30319D] transition"
+                  placeholder="กรอก Ticket ID, ชื่อ, หรือรหัสนักศึกษา"
+                  value={input}
+                  onChange={e => setInput(e.target.value)}
+                  onKeyDown={e => e.key === "Enter" && handleSearch()}
+                  disabled={loading || scanning}
+                />
+                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                  </svg>
+                </div>
+              </div>
+              <div className="mt-3 flex space-x-3">
+                <button
+                  className="flex-1 bg-[#30319D] hover:bg-[#262783] text-white px-4 py-2.5 rounded-lg transition flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={() => handleSearch()}
+                  disabled={loading || scanning || !input.trim()}
+                >
+                  {loading ? (
+                    <>
+                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      กำลังค้นหา...
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                      </svg>
+                      ค้นหา
+                    </>
+                  )}
+                </button>
+                <button
+                  className={`flex-1 ${scanning ? "bg-red-500 hover:bg-red-600" : "bg-amber-500 hover:bg-amber-600"} text-white px-4 py-2.5 rounded-lg transition flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed`}
+                  onClick={scanning ? stopScan : startScan}
+                  disabled={loading}
+                >
+                  {scanning ? (
+                    <>
+                      <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                      </svg>
+                      หยุดสแกน
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path>
+                      </svg>
+                      สแกน QR Code
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+            
+            {/* QR Scanner */}
+            {scanning && (
+              <div className="mb-5">
+                <div className="relative mx-auto" style={{ maxWidth: '300px' }}>
+                  <div className="absolute inset-0 border-2 border-dashed border-blue-400 rounded-lg pointer-events-none z-10 animate-pulse"></div>
+                  <div id="qr-reader" className="overflow-hidden rounded-lg" style={{ width: '100%', height: '300px' }}></div>
+                </div>
+                <p className="text-center text-sm text-gray-500 mt-2">วางให้ QR Code อยู่ในกรอบเพื่อสแกน</p>
+              </div>
+            )}
+            
+            {/* Result Message */}
+            {result && (
+              <div className={`p-3 mb-4 rounded-lg border ${getResultClass()}`}>
+                <div className="flex items-center">
+                  {resultType === "success" ? (
+                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                  ) : (
+                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                  )}
+                  <span>{result}</span>
+                </div>
+              </div>
+            )}
+            
+            {/* Ticket Information */}
+            {ticket && (
+              <div className="border rounded-lg overflow-hidden bg-gray-50 mb-4 transition-all animate-fadeIn">
+                <div className="bg-gray-100 border-b p-3 flex justify-between items-center">
+                  <h3 className="font-medium text-gray-800">ข้อมูลผู้ลงทะเบียน</h3>
+                  <span className={`text-xs px-2 py-1 rounded-full ${
+                    ticket.checkInStatus 
+                      ? "bg-green-100 text-green-800" 
+                      : "bg-yellow-100 text-yellow-800"
+                  }`}>
+                    {ticket.checkInStatus ? "เช็คอินแล้ว" : "ยังไม่เช็คอิน"}
+                  </span>
+                </div>
+                <div className="p-4">
+                  <div className="flex flex-wrap md:flex-nowrap">
+                    <div className="w-full md:w-3/4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                          <p className="text-sm text-gray-500">ชื่อ-สกุล</p>
+                          <p className="font-semibold text-gray-800">{ticket.name}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-500">รหัสนักศึกษา</p>
+                          <p className="font-medium text-gray-800">{ticket.studentID}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-500">Ticket ID</p>
+                          <p className="font-medium text-gray-700">{ticket.id}</p>
+                        </div>
+                        {ticket.faculty && (
+                          <div>
+                            <p className="text-sm text-gray-500">หลักสูตร</p>
+                            <p className="font-medium text-gray-800">{ticket.faculty}</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    {ticket.group && (
+                      <div className="w-full md:w-1/4 flex justify-center items-center mt-4 md:mt-0">
+                        <div className="w-16 h-16 rounded-full bg-[#30319D] flex items-center justify-center">
+                          <span className="text-white text-2xl font-bold">{ticket.group}</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {!ticket.checkInStatus && (
+                    <div className="mt-4 pt-4 border-t">
+                      <button
+                        className="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-lg transition flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                        onClick={handleCheckin}
+                        disabled={loading}
+                      >
+                        {loading ? (
+                          <>
+                            <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            กำลังดำเนินการ...
+                          </>
+                        ) : (
+                          <>
+                            <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            ยืนยันการเช็คอิน
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+        
+        {/* Recent Check-ins */}
+        {recentCheckins.length > 0 && (
+          <div className="bg-white rounded-xl shadow-md overflow-hidden">
+            <div className="bg-gradient-to-r from-[#30319D] to-[#4344b3] p-4 text-white">
+              <div className="flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <h2 className="text-sm font-semibold">การเช็คอินล่าสุด</h2>
+              </div>
+            </div>
+            <div className="p-3">
+              <ul className="divide-y divide-gray-100">
+                {recentCheckins.map((checkin, index) => (
+                  <li key={index} className="py-2 flex justify-between items-center">
+                    <div>
+                      <p className="font-medium text-gray-800">{checkin.name}</p>
+                      <p className="text-xs text-gray-500">{checkin.studentID} • {checkin.id}</p>
+                    </div>
+                    {checkin.group && (
+                      <div className="w-8 h-8 rounded-full bg-[#30319D]/90 flex items-center justify-center">
+                        <span className="text-white text-xs font-bold">{checkin.group}</span>
+                      </div>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

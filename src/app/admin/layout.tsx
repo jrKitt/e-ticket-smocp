@@ -76,11 +76,11 @@ const AdminLayout: React.FC<React.PropsWithChildren<object>> = ({ children }) =>
   };
 
   return (
-    <div className="min-h-screen bg-[#f8f9fc] flex">
+    <div className="min-h-screen bg-[#f8f9fc] flex z-[99999] relative">
       {/* Sidebar */}
       <aside
         className={`
-          fixed inset-y-0 left-0 z-50 bg-white shadow-lg transform transition-all duration-300 ease-in-out
+          fixed inset-y-0 left-0 z-[99999] bg-white shadow-lg transform transition-all duration-300 ease-in-out
           ${isSidebarOpen ? "w-64" : "w-20"}
           ${isMobile ? (isMobileMenuOpen ? "translate-x-0" : "-translate-x-full") : "translate-x-0"}
           lg:static
@@ -109,7 +109,7 @@ const AdminLayout: React.FC<React.PropsWithChildren<object>> = ({ children }) =>
             </button>
           )}
         </div>
-        <nav className="mt-6 px-4">
+        <nav className="mt-6 px-4 z-[99999]">
           <div className="space-y-1">
             {navItems.map((item) => (
               <NavLink key={item.href} item={item} />
@@ -129,9 +129,9 @@ const AdminLayout: React.FC<React.PropsWithChildren<object>> = ({ children }) =>
         </nav>
       </aside>
       {/* Main content area */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col z-[99999]">
         {/* Top navigation for mobile */}
-        <header className="bg-white shadow-sm h-16 flex items-center justify-between px-4 lg:px-6">
+        <header className="bg-white shadow-sm h-16 flex items-center justify-between px-4 lg:px-6 z-[99999]">
           <div className="flex items-center">
             <button
               className="lg:hidden mr-4 text-gray-600"
@@ -158,7 +158,7 @@ const AdminLayout: React.FC<React.PropsWithChildren<object>> = ({ children }) =>
             </button>
           </div>
         </header>
-        <main className="flex-1 p-4 lg:p-6 overflow-auto">
+        <main className="flex-1 p-4 lg:p-6 overflow-auto z-[99999]">
           <div className="text-sm text-gray-500 mb-6 hidden lg:block">
             <span>แอดมิน</span>
             <span className="mx-2">{">"}</span>
@@ -171,7 +171,7 @@ const AdminLayout: React.FC<React.PropsWithChildren<object>> = ({ children }) =>
       </div>
       {isMobileMenuOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-30 z-40 lg:hidden"
+          className="fixed inset-0 bg-black bg-opacity-30 z-[99999] lg:hidden"
           onClick={() => setIsMobileMenuOpen(false)}
         />
       )}
