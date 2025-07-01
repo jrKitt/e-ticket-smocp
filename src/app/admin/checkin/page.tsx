@@ -51,7 +51,7 @@ export default function QrcodeCheckin() {
       const res = await fetch("/api/e-ticket-checkin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: ticket.id, checkInStatus: true }),
+        body: JSON.stringify({ id: ticket.id }), 
       });
       const data = await res.json();
       if (res.ok) {
