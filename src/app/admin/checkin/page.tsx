@@ -76,7 +76,6 @@ export default function QrcodeCheckin() {
         setResult("เช็คอินสำเร็จ");
         setResultType("success");
         setRecentCheckins(prev => [updatedTicket, ...prev].slice(0, 5));
-        // เคลียร์ input หลังจากเช็คอินสำเร็จ
         setTimeout(() => {
           setInput("");
           setTicket(null);
@@ -94,53 +93,36 @@ export default function QrcodeCheckin() {
     setLoading(false);
   };
 
-  const startScan = async () => {
-    setScanning(true);
-    setResult("");
-    setResultType("");
-    setTicket(null);
-    
-    if (!html5QrCodeRef.current) {
-      html5QrCodeRef.current = new Html5Qrcode("qr-reader");
-    }
-    
-    try {
-      await html5QrCodeRef.current.start(
-        { facingMode: "environment" },
-        {
-          fps: 10,
-          qrbox: { width: 250, height: 250 },
-        },
-        (decodedText: string) => {
-          stopScan();
-          setInput(decodedText);
-          handleSearch(decodedText);
-        },
-        () => {
-          // Ignore errors
-        }
-      );
-    } catch {
-      setResult("ไม่สามารถเข้าถึงกล้องได้");
-      setResultType("error");
-      setScanning(false);
-    }
-  };
-
-  const stopScan = () => {
-    if (html5QrCodeRef.current) {
-      html5QrCodeRef.current.stop();
-    }
-    setScanning(false);
-  };
-
   useEffect(() => {
-    return () => {
-      if (html5QrCodeRef.current) {
-        html5QrCodeRef.current.stop();
+    if (scanning) {
+      if (!html5QrCodeRef.current) {
+        html5QrCodeRef.current = new Html5Qrcode("qr-reader");
       }
+      html5QrCodeRef.current
+        .start(
+          { facingMode: "environment" },
+          { fps: 10, qrbox: { width: 250, height: 250 } },
+          (decodedText: string) => {
+            setScanning(false);
+            setInput(decodedText);
+            handleSearch(decodedText);
+            html5QrCodeRef.current?.stop();
+          },
+          () => {}
+        )
+        .catch(() => {
+          setResult("ไม่สามารถเข้าถึงกล้องได้");
+          setResultType("error");
+          setScanning(false);
+        });
+    } else {
+      html5QrCodeRef.current?.stop().catch(() => {});
+    }
+    return () => {
+      html5QrCodeRef.current?.stop().catch(() => {});
     };
-  }, []);
+    // eslint-disable-next-line
+  }, [scanning]);
 
   const getResultClass = () => {
     if (resultType === "success") return "bg-green-100 border-green-500 text-green-700";
@@ -148,6 +130,17 @@ export default function QrcodeCheckin() {
     return "";
   };
 
+  function stopScan() {
+    setScanning(false);
+    setResult("");
+    setResultType("");
+    html5QrCodeRef.current?.stop().catch(() => {});
+  }
+  function startScan() {
+    setResult("");
+    setResultType("");
+    setScanning(true);
+  }
   return (
     <div className="min-h-screen bg-gray-50 pt-6 pb-12 ">
       <div className="max-w-lg mx-auto px-4">
