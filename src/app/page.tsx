@@ -24,27 +24,43 @@ const majorMap = {
 };
 
 export default function Home() {
-  const [currentStep, setCurrentStep] = useState(() => localStorage.getItem("currentStep") || "checkStudent");
-  const [studentID, setStudentID] = useState(() => localStorage.getItem("studentID") || "");
-  const [fullName, setFullName] = useState(() => localStorage.getItem("fullName") || "");
-  const [faculty, setFaculty] = useState(() => localStorage.getItem("faculty") || "");
-  const [foodType, setFoodType] = useState(() => localStorage.getItem("foodType") || "อาหารทั่วไป");
-  const [group, setGroup] = useState(() => localStorage.getItem("group") || null);
+  // 1. กำหนด state เริ่มต้นแบบปกติ
+  const [currentStep, setCurrentStep] = useState("checkStudent");
+  const [studentID, setStudentID] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [faculty, setFaculty] = useState("");
+  const [foodType, setFoodType] = useState("อาหารทั่วไป");
+  const [group, setGroup] = useState<string | null>(null);
   const [isSpinning, setIsSpinning] = useState(false);
   const [rotation, setRotation] = useState(0);
   const [studentStatus, setStudentStatus] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
-  const [registrationComplete, setRegistrationComplete] = useState(() => localStorage.getItem("registrationComplete") === "true");
-  const [ticketId, setTicketId] = useState(() => localStorage.getItem("ticketId") || "");
+  const [registrationComplete, setRegistrationComplete] = useState(false);
+  const [ticketId, setTicketId] = useState("");
 
-  useEffect(() => { localStorage.setItem("currentStep", currentStep); }, [currentStep]);
-  useEffect(() => { localStorage.setItem("studentID", studentID); }, [studentID]);
-  useEffect(() => { localStorage.setItem("fullName", fullName); }, [fullName]);
-  useEffect(() => { localStorage.setItem("faculty", faculty); }, [faculty]);
-  useEffect(() => { localStorage.setItem("foodType", foodType); }, [foodType]);
-  useEffect(() => { localStorage.setItem("group", group ?? ""); }, [group]);
-  useEffect(() => { localStorage.setItem("registrationComplete", registrationComplete ? "true" : "false"); }, [registrationComplete]);
-  useEffect(() => { localStorage.setItem("ticketId", ticketId); }, [ticketId]);
+  // 2. โหลดค่าจาก localStorage หลัง mount (client-only)
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setCurrentStep(localStorage.getItem("currentStep") || "checkStudent");
+      setStudentID(localStorage.getItem("studentID") || "");
+      setFullName(localStorage.getItem("fullName") || "");
+      setFaculty(localStorage.getItem("faculty") || "");
+      setFoodType(localStorage.getItem("foodType") || "อาหารทั่วไป");
+      setGroup(localStorage.getItem("group") || null);
+      setRegistrationComplete(localStorage.getItem("registrationComplete") === "true");
+      setTicketId(localStorage.getItem("ticketId") || "");
+    }
+  }, []);
+
+  // 3. sync state กับ localStorage ตามเดิม (ใน useEffect)
+  useEffect(() => { if (typeof window !== "undefined") localStorage.setItem("currentStep", currentStep); }, [currentStep]);
+  useEffect(() => { if (typeof window !== "undefined") localStorage.setItem("studentID", studentID); }, [studentID]);
+  useEffect(() => { if (typeof window !== "undefined") localStorage.setItem("fullName", fullName); }, [fullName]);
+  useEffect(() => { if (typeof window !== "undefined") localStorage.setItem("faculty", faculty); }, [faculty]);
+  useEffect(() => { if (typeof window !== "undefined") localStorage.setItem("foodType", foodType); }, [foodType]);
+  useEffect(() => { if (typeof window !== "undefined") localStorage.setItem("group", group ?? ""); }, [group]);
+  useEffect(() => { if (typeof window !== "undefined") localStorage.setItem("registrationComplete", registrationComplete ? "true" : "false"); }, [registrationComplete]);
+  useEffect(() => { if (typeof window !== "undefined") localStorage.setItem("ticketId", ticketId); }, [ticketId]);
 
   useEffect(() => {
     if (registrationComplete && !ticketId) {
