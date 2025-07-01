@@ -142,7 +142,6 @@ export default function QrcodeCheckin() {
     };
   }, []);
 
-  // เพิ่มคลาสเมื่อมีการแสดงผลลัพธ์
   const getResultClass = () => {
     if (resultType === "success") return "bg-green-100 border-green-500 text-green-700";
     if (resultType === "error") return "bg-red-100 border-red-500 text-red-700";
@@ -157,9 +156,7 @@ export default function QrcodeCheckin() {
           <p className="text-gray-600">กิจกรรมรับน้องและเปิดโลก CP</p>
         </div>
         
-        {/* Card */}
         <div className="bg-white rounded-xl shadow-md overflow-hidden mb-6">
-          {/* Header */}
           <div className="bg-gradient-to-r from-[#30319D] to-[#4344b3] p-4 text-white">
             <div className="flex items-center">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -169,9 +166,7 @@ export default function QrcodeCheckin() {
             </div>
           </div>
           
-          {/* Content */}
           <div className="p-5">
-            {/* Search Bar */}
             <div className="mb-5">
               <label htmlFor="search-input" className="block text-sm font-medium text-gray-700 mb-1">
                 ค้นหาข้อมูล
@@ -250,7 +245,6 @@ export default function QrcodeCheckin() {
               </div>
             )}
             
-            {/* Result Message */}
             {result && (
               <div className={`p-3 mb-4 rounded-lg border ${getResultClass()}`}>
                 <div className="flex items-center">
@@ -268,7 +262,6 @@ export default function QrcodeCheckin() {
               </div>
             )}
             
-            {/* Ticket Information */}
             {ticket && (
               <div className="border rounded-lg overflow-hidden bg-gray-50 mb-4 transition-all animate-fadeIn">
                 <div className="bg-gray-100 border-b p-3 flex justify-between items-center">
@@ -347,7 +340,6 @@ export default function QrcodeCheckin() {
           </div>
         </div>
         
-        {/* Recent Check-ins */}
         {recentCheckins.length > 0 && (
           <div className="bg-white rounded-xl shadow-md overflow-hidden">
             <div className="bg-gradient-to-r from-[#30319D] to-[#4344b3] p-4 text-white">

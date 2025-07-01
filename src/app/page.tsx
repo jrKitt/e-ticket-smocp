@@ -24,7 +24,6 @@ const majorMap = {
 };
 
 export default function Home() {
-  // 1. กำหนด state เริ่มต้นแบบปกติ
   const [currentStep, setCurrentStep] = useState("checkStudent");
   const [studentID, setStudentID] = useState("");
   const [fullName, setFullName] = useState("");
@@ -69,7 +68,6 @@ export default function Home() {
     }
   }, [registrationComplete, ticketId]);
 
-  // --- Handler Functions ---
   const handleCheckStudentID = async () => {
     if (studentID.trim() === "") return;
     setLoading(true);
@@ -409,7 +407,6 @@ export default function Home() {
                   </div>
                 )}
 
-                {/* ปุ่มสุ่ม */}
                 <div>
                   <button
                     className={`px-6 py-3 rounded-lg ${
@@ -462,11 +459,9 @@ export default function Home() {
             </div>
           )}
 
-          {/* ตั๋วเข้างาน */}
           {currentStep === "ticket" && (
             <div className="animate-fadeIn">
               <div className="max-w-md mx-auto rounded-xl overflow-hidden shadow-2xl">
-                {/* ส่วนหัว */}
                 <div className="bg-gradient-to-r from-blue-800 to-blue-600 p-5 relative">
                   <div className="absolute top-0 left-0 w-full h-full opacity-10">
                     <div className="grid grid-cols-10 grid-rows-10 h-full w-full">
@@ -515,7 +510,6 @@ export default function Home() {
                   </div>
                 </div>
                 
-                {/* ส่วน QR Code */}
                 <div className="bg-white p-6">
                   <div className="flex items-center justify-between">
                     <div className="w-3/5">
@@ -597,7 +591,6 @@ export default function Home() {
         theme="colored"
       />
       
-      {/* Footer */}
       <footer className="mt-10 pb-6 text-center text-gray-500 text-sm">
         <h5 className="fw-bold">STUDENT UNION | College Of Computing</h5>
             <p className="small mb-1">สโมสรนักศึกษาวิทยาลัยการคอมพิวเตอร์</p>
