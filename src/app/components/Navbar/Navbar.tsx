@@ -39,7 +39,7 @@ export default function Navbar() {
                             SMOCP
                         </span>
                         <span className="text-xs text-blue-200 hidden sm:block">
-                            Student Management Online CP
+                           STUDENT UNION | College Of Computing
                         </span>
                     </div>
                 </Link>
@@ -68,7 +68,7 @@ export default function Navbar() {
                         <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-400 transition-all duration-300 group-hover:w-full"></span>
                     </Link>
                     <Link
-                        href=""
+                        href="/login"
                         className="ml-2 px-5 py-2 bg-white text-[#30319D] hover:bg-blue-50 rounded-full text-sm font-medium transition-all duration-200 flex items-center"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">

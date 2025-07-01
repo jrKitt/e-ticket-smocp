@@ -130,9 +130,39 @@ export default function Home() {
     }, 5000);
   };
 
-  const handleConfirmRegistration = () => {
-    setRegistrationComplete(true);
-    setCurrentStep("ticket");
+  const handleConfirmRegistration = async () => {
+    let newTicketId = ticketId;
+    if (!newTicketId) {
+      newTicketId = `CPFRESHY-${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
+      setTicketId(newTicketId);
+    }
+    try {
+      const payload = {
+        id: newTicketId,
+        studentID,
+        name: fullName,
+        faculty,
+        foodType,
+        group,
+        registeredAt: new Date().toISOString(),
+        checkInStatus: false,
+      };
+      const res = await fetch("/api/e-ticket", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        toast.success("ยืนยันข้อมูลสำเร็จ!");
+      } else {
+        toast.error(data.error || "เกิดข้อผิดพลาดในการยืนยันข้อมูล");
+      }
+      setRegistrationComplete(true);
+      setCurrentStep("ticket");
+    } catch {
+      toast.error("เกิดข้อผิดพลาดในการเชื่อมต่อ");
+    }
   };
 
   const formatDate = (date: Date): string => {
