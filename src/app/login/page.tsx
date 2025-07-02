@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import MobileNavbar from "@/app/components/Navbar/Navbar";
 
 const Page = () => {
   const router = useRouter();
@@ -34,7 +35,8 @@ const Page = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-10 text-black">
-        
+              <MobileNavbar />
+    
       <div className="w-full max-w-md mx-auto px-4">
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
           <div className="flex flex-col items-center justify-center pt-8 pb-4">

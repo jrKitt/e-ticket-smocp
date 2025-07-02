@@ -76,7 +76,7 @@ const AdminLayout: React.FC<React.PropsWithChildren<object>> = ({ children }) =>
   };
 
   return (
-    <div className="min-h-screen bg-[#f8f9fc] flex z-[99999] relative">
+    <div className="min-h-screen bg-[#f8f9fc] flex z-[99999] ">
       {/* Sidebar */}
       <aside
         className={`
@@ -84,7 +84,12 @@ const AdminLayout: React.FC<React.PropsWithChildren<object>> = ({ children }) =>
           ${isSidebarOpen ? "w-64" : "w-20"}
           ${isMobile ? (isMobileMenuOpen ? "translate-x-0" : "-translate-x-full") : "translate-x-0"}
           lg:static
+          flex flex-col
         `}
+        style={{
+          height: isMobile ? "100vh" : "auto",
+          top: isMobile ? 0 : undefined,
+        }}
       >
         {/* Sidebar header */}
         <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200">
@@ -109,7 +114,7 @@ const AdminLayout: React.FC<React.PropsWithChildren<object>> = ({ children }) =>
             </button>
           )}
         </div>
-        <nav className="mt-6 px-4 z-[99999]">
+        <nav className="mt-6 px-4 z-[99999] flex-1">
           <div className="space-y-1">
             {navItems.map((item) => (
               <NavLink key={item.href} item={item} />
@@ -129,7 +134,7 @@ const AdminLayout: React.FC<React.PropsWithChildren<object>> = ({ children }) =>
         </nav>
       </aside>
       {/* Main content area */}
-      <div className="flex-1 flex flex-col z-[99999]">
+      <div className="flex-1 flex flex-col z-[99999] min-w-0">
         {/* Top navigation for mobile */}
         <header className="bg-white shadow-sm h-16 flex items-center justify-between px-4 lg:px-6 z-[99999]">
           <div className="flex items-center">
@@ -139,7 +144,7 @@ const AdminLayout: React.FC<React.PropsWithChildren<object>> = ({ children }) =>
             >
               <IoMenuOutline className="text-2xl" />
             </button>
-            <h1 className="text-xl font-semibold text-gray-800">
+            <h1 className="text-xl font-semibold text-gray-800 truncate max-w-[180px] sm:max-w-none">
               {navItems.find((item) => item.href === pathname)?.name || "แอดมิน"}
             </h1>
           </div>
@@ -158,20 +163,20 @@ const AdminLayout: React.FC<React.PropsWithChildren<object>> = ({ children }) =>
             </button>
           </div>
         </header>
-        <main className="flex-1 p-4 lg:p-6 overflow-auto z-[99999]">
-          <div className="text-sm text-gray-500 mb-6 hidden lg:block">
+        <main className="flex-1 p-2 sm:p-4 lg:p-6 overflow-auto z-[99999]">
+          <div className="text-sm text-gray-500 mb-4 sm:mb-6 hidden lg:block">
             <span>แอดมิน</span>
             <span className="mx-2">{">"}</span>
             <span className="text-[#30319D] font-medium">
               {navItems.find((item) => item.href === pathname)?.name || ""}
             </span>
           </div>
-          {children}
+          <div className="w-full max-w-full">{children}</div>
         </main>
       </div>
       {isMobileMenuOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-30 z-[99999] lg:hidden"
+          className="fixed inset-0 bg-black bg-opacity-30 z-[99998] lg:hidden"
           onClick={() => setIsMobileMenuOpen(false)}
         />
       )}

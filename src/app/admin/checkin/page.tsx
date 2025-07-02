@@ -66,7 +66,7 @@ export default function QrcodeCheckin() {
       const res = await fetch("/api/e-ticket-checkin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: ticket.id }), 
+        body: JSON.stringify({ studentID: ticket.studentID }), 
       });
       const data = await res.json();
       
@@ -142,7 +142,7 @@ export default function QrcodeCheckin() {
     setScanning(true);
   }
   return (
-    <div className="min-h-screen bg-gray-50 pt-6 pb-12 ">
+    <div className="min-h-screen bg-gray-50 pt-6 pb-12">
       <div className="max-w-lg mx-auto px-4">
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-[#30319D] mb-2">ระบบเช็คอินกิจกรรม</h1>

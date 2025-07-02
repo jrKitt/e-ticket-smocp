@@ -32,7 +32,6 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'Invalid student ID' }, { status: 401 });
         }
 
-        // ดึงข้อมูลทั้งหมดที่เจอ
         const students = studentSnap.docs.map(doc => doc.data());
 
         return NextResponse.json({ students });

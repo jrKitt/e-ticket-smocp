@@ -9,6 +9,7 @@ interface Ticket {
   studentID: string;
   faculty: string;
   foodType: string;
+  foodNote: string;
   group: string | number;
   registeredAt: string;
   checkInStatus: boolean;
@@ -50,7 +51,7 @@ const AdminDashboard = () => {
   const checkedInCount = tickets.filter(ticket => ticket.checkInStatus).length;
 
   return (
-    <div className="min-h-screen bg-[#f8f9fc]">
+    <div className="min-h-screen bg-[#f8f9fc] ">
       <div className="bg-gradient-to-r from-[#30319D] to-[#4344b3] pt-24 pb-32 px-6">
         <div className="max-w-7xl mx-auto">
           <h1 className="text-3xl font-bold text-white mb-2">Admin Dashboard</h1>
@@ -165,7 +166,7 @@ const AdminDashboard = () => {
                     อาหาร
                   </th>
                   <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    กลุ่ม
+                    หมายเหตุ
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     ลงทะเบียนเมื่อ
@@ -201,8 +202,8 @@ const AdminDashboard = () => {
                         </span>
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap text-center">
-                        <div className="w-8 h-8 rounded-full flex items-center justify-center bg-[#30319D] text-white font-bold text-lg mx-auto">
-                          {ticket.group}
+                        <div className="px-4 py-3 whitespace-nowrap text-xs text-red-500">
+                          {ticket.foodNote}
                         </div>
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap text-xs text-gray-500">

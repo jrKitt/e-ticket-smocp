@@ -16,20 +16,20 @@ const db = getFirestore();
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { id } = body;
-    if (!id) {
-      return NextResponse.json({ error: "Ticket ID is required" }, { status: 400 });
+    const { studentID } = body;
+    if (!studentID) {
+      return NextResponse.json({ error: "StudentID is required" }, { status: 400 });
     }
 
-    const ticketRef = db.collection("e-tickets").doc(id);
-    const ticketSnap = await ticketRef.get();
+    // ค้นหา ticket ด้วย studentID
+    const ticketSnap = await db.collection("e-tickets").where("studentID", "==", studentID).limit(1).get();
 
-    if (!ticketSnap.exists) {
-      await ticketRef.set(body);
-      return NextResponse.json({ message: "Create success", ticket: body });
+    if (ticketSnap.empty) {
+      return NextResponse.json({ error: "ไม่พบข้อมูลตั๋ว" }, { status: 404 });
     } else {
-      await ticketRef.update({ checkInStatus: true });
-      const updated = (await ticketRef.get()).data();
+      const ticketDoc = ticketSnap.docs[0];
+      await ticketDoc.ref.update({ checkInStatus: true });
+      const updated = (await ticketDoc.ref.get()).data();
       return NextResponse.json({ message: "Check-in success", ticket: updated });
     }
   } catch (error) {

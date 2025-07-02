@@ -16,19 +16,32 @@ const db = getFirestore();
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { id, studentID, name, faculty, foodType, group, registeredAt, checkInStatus, foodNote } = body;
+    const { studentID, id, name, faculty, foodType, group, registeredAt, checkInStatus, foodNote } = body;
 
-    if (!id || !studentID || !name || !faculty || !foodType || !registeredAt) {
-      if (id && typeof checkInStatus === "boolean") {
-        const ticketRef = db.collection("e-tickets").doc(id);
-        const ticketSnap = await ticketRef.get();
-        if (!ticketSnap.exists) {
-          return NextResponse.json({ error: "ไม่พบตั๋ว" }, { status: 404 });
-        }
-        await ticketRef.update({ checkInStatus });
-        const updated = (await ticketRef.get()).data();
-        return NextResponse.json({ message: "Check-in success", ticket: updated });
+    // ถ้ามี studentID ให้ค้นหาตั๋วจาก studentID
+    if (studentID && !id && !name && !faculty && !foodType && !registeredAt) {
+      const snapshot = await db.collection("e-tickets").where("studentID", "==", studentID).limit(1).get();
+      if (snapshot.empty) {
+        return NextResponse.json({ error: "ไม่พบตั๋ว" }, { status: 404 });
       }
+      const ticket = snapshot.docs[0].data();
+      return NextResponse.json({ ticket });
+    }
+
+    // อัปเดต checkInStatus
+    if (id && typeof checkInStatus === "boolean") {
+      const ticketRef = db.collection("e-tickets").doc(id);
+      const ticketSnap = await ticketRef.get();
+      if (!ticketSnap.exists) {
+        return NextResponse.json({ error: "ไม่พบตั๋ว" }, { status: 404 });
+      }
+      await ticketRef.update({ checkInStatus });
+      const updated = (await ticketRef.get()).data();
+      return NextResponse.json({ message: "Check-in success", ticket: updated });
+    }
+
+    // สร้างตั๋วใหม่
+    if (!id || !studentID || !name || !faculty || !foodType || !registeredAt) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
