@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import * as XLSX from "xlsx";
 
 const PAGE_SIZE = 10;
 interface Ticket {
@@ -76,6 +77,70 @@ const AdminDashboard = () => {
 
   const totalTickets = tickets.length;
   const checkedInCount = tickets.filter(ticket => ticket.checkInStatus).length;
+
+  const handleExportCSV = () => {
+    const headers = [
+      "Ticket ID",
+      "รหัสนักศึกษา",
+      "ชื่อ-นามสกุล",
+      "หลักสูตร",
+      "อาหาร",
+      "หมายเหตุ",
+      "กลุ่ม",
+      "ลงทะเบียนเมื่อ",
+      "สถานะ"
+    ];
+    const rows = filteredTickets.map((ticket) => [
+      ticket.id,
+      ticket.studentID,
+      ticket.name,
+      ticket.faculty,
+      ticket.foodType,
+      ticket.foodNote,
+      ticket.group,
+      ticket.registeredAt,
+      ticket.checkInStatus ? "เช็คอินแล้ว" : "ยังไม่เช็คอิน"
+    ]);
+    const csvContent =
+      [headers, ...rows]
+        .map((row) =>
+          row
+            .map((cell) =>
+              typeof cell === "string" && (cell.includes(",") || cell.includes('"'))
+                ? `"${cell.replace(/"/g, '""')}"`
+                : cell
+            )
+            .join(",")
+        )
+        .join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "e-ticket-list.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleExportXLSX = () => {
+    const ws = XLSX.utils.json_to_sheet(
+      filteredTickets.map((ticket) => ({
+        "Ticket ID": ticket.id,
+        "รหัสนักศึกษา": ticket.studentID,
+        "ชื่อ-นามสกุล": ticket.name,
+        "หลักสูตร": ticket.faculty,
+        "อาหาร": ticket.foodType,
+        "หมายเหตุ": ticket.foodNote,
+        "กลุ่ม": ticket.group,
+        "ลงทะเบียนเมื่อ": ticket.registeredAt,
+        "สถานะ": ticket.checkInStatus ? "เช็คอินแล้ว" : "ยังไม่เช็คอิน",
+      }))
+    );
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "สรุปผลการลงทะเบียน");
+    XLSX.writeFile(wb, "e-ticket-list.xlsx");
+  };
 
   return (
     <div className="min-h-screen bg-[#f8f9fc] ">
@@ -168,6 +233,22 @@ const AdminDashboard = () => {
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
                   </svg>
+                </div>
+                
+                {/* ปุ่ม export */}
+                <div className="flex flex-col md:flex-row space-y-3 md:space-y-0 md:space-x-3">
+                  <button
+                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium mr-2"
+                    onClick={handleExportCSV}
+                  >
+                    ดาวน์โหลด CSV
+                  </button>
+                  <button
+                    className="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg text-sm font-medium"
+                    onClick={handleExportXLSX}
+                  >
+                    ดาวน์โหลด Excel
+                  </button>
                 </div>
               </div>
             </div>
