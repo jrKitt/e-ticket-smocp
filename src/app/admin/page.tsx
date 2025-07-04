@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from "react";
 
 const PAGE_SIZE = 10;
-
 interface Ticket {
   id: string;
   name: string;
@@ -20,15 +19,43 @@ const AdminDashboard = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedFilter, setSelectedFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
 
   useEffect(() => {
-    const fetchTickets = async () => {
-      const res = await fetch("/api/e-ticket");
-      const data = await res.json();
-      setTickets(data.tickets || []);
-    };
-    fetchTickets();
+    const role = typeof window !== "undefined" ? localStorage.getItem("role") : null;
+    if (role !== "admin") {
+      setIsAdmin(false);
+    } else {
+      setIsAdmin(true);
+    }
   }, []);
+
+  useEffect(() => {
+    if (isAdmin) {
+      const fetchTickets = async () => {
+        const res = await fetch("/api/e-ticket");
+        const data = await res.json();
+        setTickets(data.tickets || []);
+      };
+      fetchTickets();
+    }
+  }, [isAdmin]);
+
+  if (isAdmin === false) {
+    window.location.href = "/login";
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="bg-white p-8 rounded-xl shadow text-center">
+          <h2 className="text-2xl font-bold text-red-600 mb-4">Unauthorized</h2>
+          <p className="text-gray-700">คุณไม่มีสิทธิ์เข้าถึงหน้านี้</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (isAdmin === null) {
+    return null;
+  }
 
   const filteredTickets = tickets.filter(ticket => {
     const matchesSearch =
@@ -112,7 +139,7 @@ const AdminDashboard = () => {
             <div className="flex flex-col md:flex-row md:items-center md:justify-between">
               <h2 className="text-xl font-semibold text-gray-800 mb-4 md:mb-0 flex items-center">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-[#30319D]" viewBox="0 0 20 20" fill="currentColor">
-                  <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
+                  <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 002-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
                 </svg>
                 รายการลงทะเบียน E-Ticket
               </h2>
@@ -305,7 +332,7 @@ const AdminDashboard = () => {
             <p className="mt-4 text-gray-500 text-sm">
               &copy; 2025 CP SHOP. All rights reserved.
             </p>
-          </div>
+          </div >
         </div>
       </footer>
     </div>

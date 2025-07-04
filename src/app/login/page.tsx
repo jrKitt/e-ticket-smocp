@@ -23,6 +23,8 @@ const Page = () => {
       });
       const data = await res.json();
       if (res.ok) {
+        localStorage.setItem("role", data.role);
+        localStorage.setItem("adminName", data.name);
         router.push("/admin");
       } else {
         setError(data.error || "เข้าสู่ระบบไม่สำเร็จ");
@@ -34,9 +36,9 @@ const Page = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-10 text-black">
-              <MobileNavbar />
-    
+    <div className="min-h-screen bg-gray-50 ">
+      <MobileNavbar /> 
+      <div className="container mx-auto px-4 py-25 max-w-md ">
       <div className="w-full max-w-md mx-auto px-4">
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
           <div className="flex flex-col items-center justify-center pt-8 pb-4">
@@ -105,6 +107,7 @@ const Page = () => {
           <p className="text-secondary mb-0">&copy; 2025 CP SHOP. All rights reserved.</p>
         </footer>
       </div>
+    </div>
     </div>
   );
 };

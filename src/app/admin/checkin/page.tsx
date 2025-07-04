@@ -1,6 +1,9 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
+import dynamic from "next/dynamic";
 import { Html5Qrcode } from "html5-qrcode";
+
+const QrReader = dynamic(() => import("react-qr-reader").then(mod => mod.QrReader), { ssr: false });
 
 interface Ticket {
   id: string;
@@ -12,6 +15,7 @@ interface Ticket {
 }
 
 export default function QrcodeCheckin() {
+  const html5QrCodeRef = useRef<Html5Qrcode | null>(null); // <--- เพิ่มบรรทัดนี้
   const [input, setInput] = useState("");
   const [ticket, setTicket] = useState<Ticket | null>(null);
   const [loading, setLoading] = useState(false);
@@ -19,7 +23,6 @@ export default function QrcodeCheckin() {
   const [resultType, setResultType] = useState<"success" | "error" | "">("");
   const [scanning, setScanning] = useState(false);
   const [recentCheckins, setRecentCheckins] = useState<Ticket[]>([]);
-  const html5QrCodeRef = useRef<Html5Qrcode | null>(null);
 
   const handleSearch = async (searchValue?: string) => {
     if (!searchValue && !input.trim()) return;
@@ -94,32 +97,46 @@ export default function QrcodeCheckin() {
   };
 
   useEffect(() => {
+    let ignore = false;
+    let qrCodeInstance: Html5Qrcode | null = null;
+
     if (scanning) {
-      if (!html5QrCodeRef.current) {
-        html5QrCodeRef.current = new Html5Qrcode("qr-reader");
-      }
-      html5QrCodeRef.current
+      const qrReaderElem = document.getElementById("qr-reader");
+      if (!qrReaderElem) return;
+
+      qrCodeInstance = new Html5Qrcode("qr-reader");
+      html5QrCodeRef.current = qrCodeInstance;
+
+      qrCodeInstance
         .start(
           { facingMode: "environment" },
           { fps: 10, qrbox: { width: 250, height: 250 } },
           (decodedText: string) => {
+            if (ignore) return;
             setScanning(false);
             setInput(decodedText);
-            handleSearch(decodedText);
-            html5QrCodeRef.current?.stop();
+            setTimeout(() => {
+              if (!ignore) handleSearch(decodedText);
+            }, 100);
+            qrCodeInstance?.stop();
           },
           () => {}
         )
         .catch(() => {
+          if (ignore) return;
           setResult("ไม่สามารถเข้าถึงกล้องได้");
           setResultType("error");
           setScanning(false);
         });
-    } else {
-      html5QrCodeRef.current?.stop().catch(() => {});
     }
+
     return () => {
-      html5QrCodeRef.current?.stop().catch(() => {});
+      ignore = true;
+      if (html5QrCodeRef.current) {
+        html5QrCodeRef.current.stop().catch(() => {});
+        html5QrCodeRef.current.clear();
+        html5QrCodeRef.current = null;
+      }
     };
     // eslint-disable-next-line
   }, [scanning]);
@@ -140,6 +157,30 @@ export default function QrcodeCheckin() {
     setResult("");
     setResultType("");
     setScanning(true);
+  }
+
+    const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const role = typeof window !== "undefined" ? localStorage.getItem("role") : null;
+    if (role !== "admin") {
+      setIsAdmin(false);
+    } else {
+      setIsAdmin(true);
+    }
+  }, []);
+
+
+  if (isAdmin === false) {
+    window.location.href = "/login";
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="bg-white p-8 rounded-xl shadow text-center">
+          <h2 className="text-2xl font-bold text-red-600 mb-4">Unauthorized</h2>
+          <p className="text-gray-700">คุณไม่มีสิทธิ์เข้าถึงหน้านี้</p>
+        </div>
+      </div>
+    );
   }
   return (
     <div className="min-h-screen bg-gray-50 pt-6 pb-12">
@@ -232,7 +273,25 @@ export default function QrcodeCheckin() {
               <div className="mb-5">
                 <div className="relative mx-auto" style={{ maxWidth: '300px' }}>
                   <div className="absolute inset-0 border-2 border-dashed border-blue-400 rounded-lg pointer-events-none z-10 animate-pulse"></div>
-                  <div id="qr-reader" className="overflow-hidden rounded-lg" style={{ width: '100%', height: '300px' }}></div>
+                  <div className="overflow-hidden rounded-lg" style={{ width: '100%', height: '300px' }}>
+                    <div style={{ width: "100%" }}>
+                      <QrReader
+                        constraints={{ facingMode: "environment" }}
+                        onResult={(result, error) => {
+                          if (!!result) {
+                            const text = result.getText();
+                            setScanning(false);
+                            setInput(text);
+                            setTimeout(() => handleSearch(text), 100);
+                          } else if (error) {
+                            setResult("ไม่สามารถเข้าถึงกล้องได้");
+                            setResultType("error");
+                            setScanning(false);
+                          }
+                        }}
+                      />
+                    </div>
+                  </div>
                 </div>
                 <p className="text-center text-sm text-gray-500 mt-2">วางให้ QR Code อยู่ในกรอบเพื่อสแกน</p>
               </div>

@@ -34,17 +34,10 @@ export async function POST(req: NextRequest) {
       username === adminData?.['smo-name'] &&
       password === adminData?.['smo-password']
     ) {
-      return NextResponse.json(
-        {
-          role: adminData!['smo-role'],
-          name: adminData!['smo-name'],
-        },
-        {
-          headers: {
-            'Set-Cookie': `role=admin; Path=/; HttpOnly; SameSite=Lax`,
-          },
-        },
-      );
+      return NextResponse.json({
+        role: adminData!['smo-role'],
+        name: adminData!['smo-name'],
+      });
     } else {
       return NextResponse.json({ error: 'Invalid username or password' }, { status: 401 });
     }
