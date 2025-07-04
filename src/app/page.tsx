@@ -213,7 +213,7 @@ export default function Home() {
             <Image src="/SMOLOGO.webp" alt="Logo" width={48} height={48} className="h-12 mr-3" priority />
             <div>
               <h1 className="text-2xl font-bold text-blue-800">ระบบลงทะเบียน</h1>
-              <p className="text-sm text-gray-600">กิจกรรมรับน้องและเปิดโลก CP</p>
+              <p className="text-sm text-gray-600">CPCRAFT OVERWORLD 2025</p>
             </div>
           </div>
         </header>
@@ -312,6 +312,7 @@ export default function Home() {
                       <option value="อาหารทั่วไป">อาหารทั่วไป</option>
                       <option value="อาหารเจ">อาหารเจ</option>
                       <option value="อาหารมุสลิม">อาหารมุสลิม</option>
+                      <option value="อาหารมังสวิรัติ">อาหารมังสวิรัติ</option>
                     </select>
                     <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
                       <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -427,7 +428,7 @@ export default function Home() {
                   </div>
                   
                   <div className="relative z-10">
-                    <h2 className="text-xl font-bold text-center text-white">กิจกรรมรับน้องและเปิดโลก CP</h2>
+                    <h2 className="text-xl font-bold text-center text-white">CPCRAFT OVERWORLD 2025</h2>
                     <div className="flex items-center justify-center mt-1">
                       <div className="h-0.5 w-10 bg-blue-300 mr-3"></div>
                       <p className="text-center text-blue-100 text-sm">วิทยาลัยการคอมพิวเตอร์ มหาวิทยาลัยขอนแก่น</p>
@@ -472,7 +473,7 @@ export default function Home() {
                           <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
                         </svg>
                         <div>
-                          <p className="text-sm font-medium text-gray-800">10-11 กรกฎาคม 2567</p>
+                          <p className="text-sm font-medium text-gray-800">10 กรกฎาคม 2568</p>
                           <p className="text-xs text-gray-500">08:30 - 16:30 น.</p>
                         </div>
                       </div>
@@ -513,20 +514,11 @@ export default function Home() {
                 </div>
               </div>
               
-              <div className="mt-6 flex gap-3 max-w-md mx-auto">
-                <button className="flex-1 bg-blue-700 hover:bg-blue-800 text-white py-3 rounded-lg text-sm font-medium transition-all flex items-center justify-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
-                  </svg>
-                  บันทึกตั๋ว
-                </button>
-                <button className="flex-1 border-2 border-blue-600 text-blue-700 py-3 rounded-lg text-sm font-medium hover:bg-blue-50 transition-all flex items-center justify-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                    <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" />
-                  </svg>
-                  แชร์ตั๋ว
-                </button>
-              </div>
+             <div className="mt-6 max-w-md mx-auto">
+      <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 p-4 rounded-lg text-center text-sm font-medium">
+        ควรแคปภาพหน้าจอไว้เพื่อแสกนเข้าวันงาน
+      </div>
+    </div>
             </div>
           )}
         </div>
