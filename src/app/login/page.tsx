@@ -65,7 +65,7 @@ const Page = () => {
               </label>
               <input
                 type="text"
-                className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black outline-none transition"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 autoFocus
@@ -78,7 +78,7 @@ const Page = () => {
               </label>
               <input
                 type="password"
-                className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                className="w-full border border-gray-300 rounded-lg p-3 text-black focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required

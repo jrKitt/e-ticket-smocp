@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
         name: adminData!['smo-name'],
       });
     } else {
-      return NextResponse.json({ error: 'Invalid username or password' }, { status: 401 });
+      return NextResponse.json({ error: 'เข้าสู่ระบบไม่สำเร็จชื่อหรือรหัสผ่านไม่ถูกต้อง' }, { status: 401 });
     }
   } catch (error) {
     console.error('Error in admin login API:', error);

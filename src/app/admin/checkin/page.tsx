@@ -211,7 +211,7 @@ export default function QrcodeCheckin() {
             <div className="mb-5">
               <label
                 htmlFor="search-input"
-                className="block text-sm font-medium text-gray-700 mb-1"
+                className="block text-sm font-medium text-black mb-1"
               >
                 ค้นหาข้อมูล
               </label>
