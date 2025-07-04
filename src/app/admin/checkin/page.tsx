@@ -175,7 +175,28 @@ export default function QrcodeCheckin() {
     if (resultType === "error") return "bg-red-100 border-red-500 text-red-700";
     return "";
   };
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
 
+  useEffect(() => {
+    const role = typeof window !== "undefined" ? localStorage.getItem("role") : null;
+    if (role !== "admin") {
+      setIsAdmin(false);
+    } else {
+      setIsAdmin(true);
+    }
+  }, []);
+
+  if (isAdmin === false) {
+    window.location.href = "/login";
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="bg-white p-8 rounded-xl shadow text-center">
+          <h2 className="text-2xl font-bold text-red-600 mb-4">Unauthorized</h2>
+          <p className="text-gray-700">คุณไม่มีสิทธิ์เข้าถึงหน้านี้</p>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="min-h-screen bg-gray-50 pt-6 pb-12">
       <div className="max-w-lg mx-auto px-4">
