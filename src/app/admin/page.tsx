@@ -142,6 +142,32 @@ const AdminDashboard = () => {
     XLSX.writeFile(wb, "e-ticket-list.xlsx");
   };
 
+  function getPagination(current: number, total: number) {
+    const delta = 2;
+    const range = [];
+    const rangeWithDots = [];
+    let l: number | undefined = undefined;
+
+    for (let i = 1; i <= total; i++) {
+      if (i === 1 || i === total || (i >= current - delta && i <= current + delta)) {
+        range.push(i);
+      }
+    }
+
+    for (const i of range) {
+      if (l) {
+        if (i - l === 2) {
+          rangeWithDots.push(l + 1);
+        } else if (i - l > 2) {
+          rangeWithDots.push("...");
+        }
+      }
+      rangeWithDots.push(i);
+      l = i;
+    }
+    return rangeWithDots;
+  }
+
   return (
     <div className="min-h-screen bg-[#f8f9fc] ">
       <div className="bg-gradient-to-r from-[#30319D] to-[#4344b3] pt-24 pb-32 px-6">
@@ -375,15 +401,24 @@ const AdminDashboard = () => {
                     <span className="sr-only">Previous</span>
                     <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
                   </button>
-                  {[...Array(totalPages)].map((_, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => setCurrentPage(idx + 1)}
-                      className={`relative inline-flex items-center px-4 py-2 border border-gray-300 ${currentPage === idx + 1 ? "bg-[#30319D] text-white" : "bg-white text-gray-700 hover:bg-gray-50"} text-sm font-medium`}
-                    >
-                      {idx + 1}
-                    </button>
-                  ))}
+                  {getPagination(currentPage, totalPages).map((page, idx) =>
+                    page === "..." ? (
+                      <span
+                        key={idx}
+                        className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-400 select-none"
+                      >
+                        ...
+                      </span>
+                    ) : (
+                      <button
+                        key={idx}
+                        onClick={() => setCurrentPage(Number(page))}
+                        className={`relative inline-flex items-center px-4 py-2 border border-gray-300 ${currentPage === page ? "bg-[#30319D] text-white" : "bg-white text-gray-700 hover:bg-gray-50"} text-sm font-medium`}
+                      >
+                        {page}
+                      </button>
+                    )
+                  )}
                   <button
                     disabled={currentPage === totalPages}
                     onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
