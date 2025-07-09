@@ -2,7 +2,8 @@
 import React, { useState, useEffect } from "react";
 import * as XLSX from "xlsx";
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE_OPTIONS = [25, 50, 100, 250, 500];
+
 interface Ticket {
   id: string;
   name: string;
@@ -20,6 +21,9 @@ const AdminDashboard = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedFilter, setSelectedFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
+  const [dateFilter, setDateFilter] = useState("");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
 
   useEffect(() => {
@@ -42,6 +46,11 @@ const AdminDashboard = () => {
     }
   }, [isAdmin]);
 
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedFilter, dateFilter, pageSize]);
+
   if (isAdmin === false) {
     window.location.href = "/login";
     return (
@@ -63,16 +72,25 @@ const AdminDashboard = () => {
       ticket.id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       ticket.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       ticket.studentID?.toLowerCase().includes(searchTerm.toLowerCase());
-    if (selectedFilter === "all") return matchesSearch;
-    if (selectedFilter === "checked-in") return matchesSearch && ticket.checkInStatus;
-    if (selectedFilter === "not-checked-in") return matchesSearch && !ticket.checkInStatus;
-    return matchesSearch;
+    
+    const matchesStatus = 
+      selectedFilter === "all" ||
+      (selectedFilter === "checked-in" && ticket.checkInStatus) ||
+      (selectedFilter === "not-checked-in" && !ticket.checkInStatus);
+    
+    const matchesDate = !dateFilter || ticket.registeredAt.includes(dateFilter);
+    
+    return matchesSearch && matchesStatus && matchesDate;
+  }).sort((a, b) => {
+    const dateA = new Date(a.registeredAt);
+    const dateB = new Date(b.registeredAt);
+    return sortOrder === "desc" ? dateB.getTime() - dateA.getTime() : dateA.getTime() - dateB.getTime();
   });
 
-  const totalPages = Math.ceil(filteredTickets.length / PAGE_SIZE);
+  const totalPages = Math.ceil(filteredTickets.length / pageSize);
   const paginatedTickets = filteredTickets.slice(
-    (currentPage - 1) * PAGE_SIZE,
-    currentPage * PAGE_SIZE
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
   );
 
   const totalTickets = tickets.length;
@@ -227,15 +245,15 @@ const AdminDashboard = () => {
         {/* ตารางรายการลงทะเบียน */}
         <div className="mt-8 bg-white rounded-xl shadow-md overflow-hidden">
           <div className="p-6 border-b border-gray-100">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-              <h2 className="text-xl font-semibold text-gray-800 mb-4 md:mb-0 flex items-center">
+            <div className="flex flex-col space-y-4">
+              <h2 className="text-xl font-semibold text-gray-800 flex items-center">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-[#30319D]" viewBox="0 0 20 20" fill="currentColor">
                   <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 002-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
                 </svg>
                 รายการลงทะเบียน E-Ticket
               </h2>
               
-              <div className="flex flex-col md:flex-row space-y-3 md:space-y-0 md:space-x-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
                 {/* ฟิลเตอร์สถานะ */}
                 <select 
                   className="rounded-lg border-gray-200 text-gray-700 text-sm px-3 py-2 focus:border-[#30319D] focus:ring focus:ring-[#30319D]/20"
@@ -246,13 +264,43 @@ const AdminDashboard = () => {
                   <option value="checked-in">เช็คอินแล้ว</option>
                   <option value="not-checked-in">ยังไม่เช็คอิน</option>
                 </select>
+
+                {/* ฟิลเตอร์วันที่ */}
+                <input
+                  type="date"
+                  className="rounded-lg border-gray-200 text-gray-700 text-sm px-3 py-2 focus:border-[#30319D] focus:ring focus:ring-[#30319D]/20"
+                  value={dateFilter}
+                  onChange={(e) => setDateFilter(e.target.value)}
+                  title="กรองตามวันที่"
+                />
+
+                {/* เรียงลำดับวันที่ */}
+                <select 
+                  className="rounded-lg border-gray-200 text-gray-700 text-sm px-3 py-2 focus:border-[#30319D] focus:ring focus:ring-[#30319D]/20"
+                  value={sortOrder}
+                  onChange={(e) => setSortOrder(e.target.value as "asc" | "desc")}
+                >
+                  <option value="desc">ใหม่สุดก่อน</option>
+                  <option value="asc">เก่าสุดก่อน</option>
+                </select>
+
+                {/* จำนวนรายการต่อหน้า */}
+                <select 
+                  className="rounded-lg border-gray-200 text-gray-700 text-sm px-3 py-2 focus:border-[#30319D] focus:ring focus:ring-[#30319D]/20"
+                  value={pageSize}
+                  onChange={(e) => setPageSize(Number(e.target.value))}
+                >
+                  {PAGE_SIZE_OPTIONS.map(size => (
+                    <option key={size} value={size}>{size} รายการ</option>
+                  ))}
+                </select>
                 
                 {/* ช่องค้นหา */}
-                <div className="relative">
+                <div className="relative lg:col-span-2">
                   <input
                     type="text"
                     placeholder="ค้นหาชื่อ, รหัสนักศึกษา, Ticket ID"
-                    className="w-full md:w-64 rounded-lg border-gray-200 text-sm pr-10 focus:border-[#30319D] focus:ring focus:ring-[#30319D]/20"
+                    className="w-full text-black rounded-lg border-gray-200 text-sm pr-10 focus:border-[#30319D] focus:ring focus:ring-[#30319D]/20"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
@@ -261,10 +309,22 @@ const AdminDashboard = () => {
                   </svg>
                 </div>
                 
-                {/* ปุ่ม export */}
-                <div className="flex flex-col md:flex-row space-y-3 md:space-y-0 md:space-x-3">
+                {/* ปุ่ม export และ clear */}
+                <div className="lg:col-span-3 xl:col-span-2 flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
                   <button
-                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium mr-2"
+                    className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-medium"
+                    onClick={() => {
+                      setSearchTerm("");
+                      setSelectedFilter("all");
+                      setDateFilter("");
+                      setSortOrder("desc");
+                      setPageSize(25);
+                    }}
+                  >
+                    ล้างฟิลเตอร์
+                  </button>
+                  <button
+                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
                     onClick={handleExportCSV}
                   >
                     ดาวน์โหลด CSV
@@ -388,7 +448,7 @@ const AdminDashboard = () => {
             <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
               <div>
                 <p className="text-sm text-gray-700">
-                  แสดง <span className="font-medium">{filteredTickets.length === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1}</span> ถึง <span className="font-medium">{Math.min(currentPage * PAGE_SIZE, filteredTickets.length)}</span> จาก <span className="font-medium">{filteredTickets.length}</span> รายการ
+                  แสดง <span className="font-medium">{filteredTickets.length === 0 ? 0 : (currentPage - 1) * pageSize + 1}</span> ถึง <span className="font-medium">{Math.min(currentPage * pageSize, filteredTickets.length)}</span> จาก <span className="font-medium">{filteredTickets.length}</span> รายการ
                 </p>
               </div>
               <div>
